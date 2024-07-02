@@ -71,7 +71,7 @@
                     </div>
 
                     <div class="logout mt-auto">
-                        <form action="">
+                        <form action="" @submit.prevent="userLogout">
                             <button class="btn btn-danger w-75" type="submit">Logout</button>
 
                         </form>
@@ -84,7 +84,104 @@
                 <router-view>
                     <template v-slot="{ Component }">
 
+                        <div class="d-flex mt-3 justify-content-end" style="margin-right: 80px;">
+                            <button type="button" class="btn position-relative">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
+                                    class="bi bi-cart-check text-success" viewBox="0 0 16 16" data-bs-toggle="modal"
+                                    data-bs-target="#exampleModal" type="button">
+                                    <path
+                                        d="M11.354 6.354a.5.5 0 0 0-.708-.708L8 8.293 6.854 7.146a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z" />
+                                    <path
+                                        d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1zm3.915 10L3.102 4h10.796l-1.313 7zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0m7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+                                </svg>
+                                <span
+                                    class="position-absolute top-0 start-95 translate-middle badge rounded-pill bg-danger"
+                                    v-if="cartItems.length > 0">
+                                    {{ cartItems.length }}
+                                    <span class="visually-hidden">unread messages</span>
+                                </span>
+                            </button>
+
+                            <!-- <button type="button" class="btn position-relative">
+
+                                <span
+                                    class="position-absolute top-10 start-95 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                    <span class="visually-hidden">New alerts</span>
+                                    {{ cartItems.length }}
+                                </span>
+                            </button> -->
+
+
+
+                            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                                aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <form action="" @submit.prevent="checkout">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5" id="exampleModalLabel">
+                                                    <label for="">Table No.</label>
+                                                    <input type="number" v-model="table_id" class="form-control">
+                                                </h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div v-for="cartItem in cartItems" :key="cartItem.id">
+                                                    <template v-if="cartItem.dish">
+                                                        <div class="d-flex gap-3 mb-4">
+                                                            <img :src="cartItem.dish.image_url" alt=""
+                                                                class="img-thumbnail cart-img">
+
+                                                            <div>
+                                                                <h5>
+                                                                    {{ cartItem.dish.name }}
+
+                                                                </h5>
+
+                                                                <div>
+                                                                    <button type="button"
+                                                                        class="btn btn-sm btn-secondary"
+                                                                        @click="subQty(cartItem)">-</button>
+                                                                    <button class="btn btn-sm btn-outline-dark mx-1">
+                                                                        {{ cartItem.quantity }}
+
+                                                                    </button>
+                                                                    <button type="button"
+                                                                        class="btn btn-sm btn-secondary"
+                                                                        @click="addQty(cartItem)">+</button>
+                                                                </div>
+
+                                                                <div class="mb-3">
+                                                                    Price - {{ cartItem.dish.price * cartItem.quantity
+                                                                    }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                    </template>
+                                                    <template v-else>
+                                                        Dish information not available
+                                                    </template>
+                                                </div>
+
+                                                <div class="">
+                                                    <h5 class="fw-semibold">Total - {{ totalPrice }} Ks</h5>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Close</button>
+                                                <button type="submit" class="btn btn-primary">Save changes</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                        </div>
                         <transition name="fade" mode="out-in">
+
                             <component :is="Component" />
                         </transition>
                     </template>
@@ -95,6 +192,8 @@
 </template>
 
 <script>
+import { mapActions, mapGetters } from 'vuex';
+
 
 export default {
     name: 'Panel',
@@ -102,10 +201,32 @@ export default {
     data() {
         return {
             homeCollapse: false,
+            // cartItems: [],
+            table_id: null,
+            // sub_total_price: this.subTotalPrice,
         }
     },
 
+    computed: {
+        ...mapGetters(['getCartItems']),
+
+        cartItems() {
+            return this.getCartItems;
+        },
+
+        totalPrice() {
+            return this.cartItems.reduce((total, item) => {
+                return total + (item.dish ? item.dish.price * item.quantity : 0);
+            }, 0);
+        },
+
+
+    },
+
     methods: {
+
+        ...mapActions(['addToCart']),
+
         isActive(route) {
             // return this.$route.path === route;
             return this.$route.path.startsWith(route);
@@ -115,6 +236,82 @@ export default {
         toggleCollapse(section) {
             this[section] = !this[section];
         },
+
+        async userLogout() {
+            try {
+                const token = localStorage.getItem('token');
+                console.log('Token:', token); // Log token for debugging
+                let res = await axios.post('http://localhost:8000/api/panel/auth/logout', {}, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                console.log(res);
+                this.logout;
+                this.$router.push('/login');
+            } catch (error) {
+                console.log(error.message);
+            }
+        },
+
+        async fetchCartItems() {
+            try {
+                await this.$store.dispatch('getCartItems');
+            } catch (error) {
+                console.error('Error fetching cart items:', error);
+            }
+        },
+
+
+        async subQty(cartItem) {
+            try {
+                await axios.post('http://localhost:8000/api/panel/cartInfo/sub-qty', {
+                    id: cartItem.id
+                });
+                // console.log(res);
+                if (cartItem.quantity > 1) {
+                    cartItem.quantity--;
+
+                }
+            } catch (error) {
+                console.log(error.message);
+            }
+
+        },
+
+
+        async addQty(cartItem) {
+            try {
+                await axios.post('http://localhost:8000/api/panel/cartInfo/add-qty', {
+                    id: cartItem.id
+                });
+                // console.log(res);
+                cartItem.quantity++;
+            } catch (error) {
+                console.log(error.message);
+            }
+
+        },
+
+
+        async checkout() {
+            console.log(this.subTotalPrice);
+            let res = await axios.post('http://localhost:8000/api/panel/cartInfo/check-out', {
+                table_id: this.table_id,
+                sub_total_price: this.totalPrice
+            });
+
+            console.log(res.data.order.sub_total_price);
+            this.cartItems.length = 0;
+        }
+
+    },
+
+    mounted() {
+        // this.getCartItems
+        this.fetchCartItems();
+
     }
 }
 </script>
@@ -168,5 +365,10 @@ li::marker {
 
 a:hover {
     color: whitesmoke;
+}
+
+.cart-img {
+    width: 120px;
+    height: 120px;
 }
 </style>

@@ -18,6 +18,7 @@
                             <th scope="col">Image</th>
                             <th scope="col">Name</th>
                             <th scope="col">Price</th>
+                            <th scope="col">Quantity</th>
                             <th scope="col">Option</th>
                         </tr>
                     </thead>
@@ -29,9 +30,16 @@
 
                             </td>
                             <td>{{ menu.name }}</td>
-                            <td>{{ menu.price }} Ks</td>
+                            <td>{{ menu.price * menu.quantity }} Ks</td>
                             <td>
-                                <button class="btn btn-sm btn-dark">Add To Order</button>
+                                <button class="btn btn-sm btn-secondary" @click="subQty(menu)">-</button>
+                                <button class="btn btn-sm btn-outline-secondary mx-1">
+                                    {{ menu.quantity }}
+                                </button>
+                                <button class="btn btn-sm btn-secondary" @click="plusQty(menu)">+</button>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-dark" @click="addToCart(menu)">Add To Cart</button>
                             </td>
                         </tr>
                     </tbody>
@@ -44,6 +52,7 @@
 <script>
 import axios from 'axios';
 import Loader from '../../components/Loader.vue';
+import { mapActions, mapGetters } from 'vuex';
 
 export default {
     name: 'MenuDetail',
@@ -52,10 +61,18 @@ export default {
         return {
             loading: false,
             menus: [],
+            // cartMenus: [],
         }
     },
 
+    // computed: {
+    //     ...mapGetters(['getCartItems'])
+    // },
+
     methods: {
+        ...mapActions(['addToCart']),
+
+
         goBack() {
             // this.$router.go(-1);
             this.$router.push('/menus');
@@ -68,19 +85,55 @@ export default {
                 let id = this.$route.params.id;
                 let res = await axios.get('http://localhost:8000/api/panel/categories/menus/' + id);
 
-                console.log(res.data.menus);
-                this.menus = res.data.menus;
+                // console.log(res.data.menus);
+                this.menus = res.data.menus.map(menu => ({
+                    ...menu,
+                    quantity: 1
+                }));
                 this.loading = false;
                 // console.log(this.menus.length);
             } catch (error) {
                 console.log(error.message);
                 this.loading = false;
             }
-        }
+        },
+
+
+        // async addToCart(menu) {
+
+        //     try {
+        //         let res = await axios.post(`http://localhost:8000/api/panel/categories/menus/${menu.id}`, {
+        //             quantity: menu.quantity
+        //         })
+
+        //         console.log(res);
+        //         menu.quantity = 1;
+        //     } catch (error) {
+        //         console.log(error.message);
+        //     }
+        // },
+
+
+
+
+
+
+
+        plusQty(menu) {
+            menu.quantity++;
+        },
+
+        subQty(menu) {
+            if (menu.quantity > 1) {
+                menu.quantity--;
+            }
+        },
+
     },
 
     mounted() {
         this.getMenus();
+        // this.getCartMenus();
     }
 }
 </script>
