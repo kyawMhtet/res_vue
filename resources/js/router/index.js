@@ -3,6 +3,7 @@ import HomePage from '../pages/Layouts/IndexPage.vue'
 import AboutPage from "../pages/AboutPage.vue";
 import LoginPage from '../auth/LoginPage.vue';
 import DishPage from '../pages/DishPage.vue';
+import OrderPage from '../pages/OrderPage.vue';
 import StaffMenu from '../pages/StaffMenu.vue';
 import SignUp from '../auth/SignUp.vue';
 import Panel from '../pages/Staff/HomePage.vue';
@@ -39,6 +40,12 @@ const routes = [
                 meta: { requiresAuth: true, roles: ['admin'] }
             },
             {
+                path: '/orders',
+                name: 'orders',
+                component: OrderPage,
+                meta: { requiresAuth: true, roles: ['admin'] }
+            },
+            {
                 path: '/about',
                 name: 'about',
                 component: AboutPage,
@@ -56,6 +63,7 @@ const routes = [
     {
         path: '/menus',
         component: Panel,
+        meta: { requiresAuth: true, roles: ['waiter'] },
         children: [
             {
                 path: '',

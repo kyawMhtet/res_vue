@@ -1,6 +1,7 @@
-// import { createStore } from "vuex";
 import { createStore } from "vuex";
 import createPersistedState from "vuex-persistedstate";
+import axios from 'axios';
+import { toast } from "vue3-toastify";
 
 export default createStore({
     plugins: [createPersistedState()],
@@ -10,6 +11,8 @@ export default createStore({
         darkMode: false,
         panelTheme: false,
         role: '',
+        cartItems: [],
+        orders: [],
     },
     getters: {
         getToken(state) {
@@ -27,6 +30,14 @@ export default createStore({
         getUserRole(state) {
             return state.role;
         },
+
+        getCartItems(state) {
+            return state.cartItems;
+        },
+
+        getOrders(state) {
+            return state.orders;
+        }
     },
 
     mutations: {
@@ -53,10 +64,68 @@ export default createStore({
 
         setRole(state, role) {
             state.role = role;
+        },
+
+        setCartItems(state, cartItems) {
+            state.cartItems = cartItems;
+        },
+
+        addToCart(state, cartItem) {
+            state.cartItems.push(cartItem);
+        },
+
+        setOrders(state, orders) {
+            state.orders = orders;
+        },
+
+        updateOrderStatus(state, order) {
+            const updateOrder = state.orders.find(o => o.id === order.id);
+            if (order) {
+                updateOrder.status = order.status;
+            }
         }
     },
 
     actions: {
+        async fetchOrders({ commit }) {
+            try {
+                let res = await axios.get('http://localhost:8000/api/orders');
+                console.log(res.data);
+                commit('setOrders', res.data.orders.map(order => ({
+                    id: order.id,
+                    order_id: order.order_id,
+                    dish_name: order.dish.name,
+                    table_id: order.table_id,
+                    quantity: order.quantity,
+                    sub_total_price: order.sub_total_price,
+                    status: order.status
+                })));
+            } catch (error) {
+                console.log(error.message);
+            }
+        },
+
+        async changeOrderStatus({ commit }, order) {
+            const formData = new FormData();
+            formData.append('oid', order.id);
+            formData.append('status', order.status);
+
+            try {
+                let res = await axios.post('http://localhost:8000/api/orders/change-status', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+                if (res.status === 200) {
+                    commit('updateOrderStatus', order);
+                }
+            } catch (error) {
+                console.log(error.message);
+            }
+        },
+
+
         setToken({ commit }, token) {
             commit('setToken', token);
         },
@@ -65,16 +134,43 @@ export default createStore({
             commit('setUserData', data);
         },
 
-
         setRole({ commit }, role) {
             commit('setRole', role);
         },
-
 
         logout({ commit }) {
             commit('clearUserData');
         },
 
+        async addToCart({ commit, dispatch }, menu) {
+            try {
+                let res = await axios.post(`http://localhost:8000/api/panel/categories/menus/${menu.id}`, {
+                    quantity: menu.quantity
+                });
+
+                console.log(res);
+                commit('addToCart', res.data.cartMenus);
+                menu.quantity = 1;
+                await dispatch('getCartItems');
+                toast('Added To Cart!', {
+                    autoClose: 1000,
+                    type: 'success',
+                    transition: 'zoom'
+                })
+            } catch (error) {
+                console.log(error.message);
+            }
+        },
+
+        async getCartItems({ commit }) {
+            try {
+                let res = await axios.get('http://localhost:8000/api/panel/cartInfo');
+                console.log('Response from API:', res.data);
+                commit('setCartItems', res.data.cartMenus);
+            } catch (error) {
+                console.log(error.message);
+            }
+        },
 
         async refreshToken({ commit }) {
             const refreshToken = localStorage.getItem('refreshToken');
@@ -96,11 +192,7 @@ export default createStore({
         },
 
         changeTheme({ commit }, theme) {
-            // const newDarkMode = !state.darkMode;
             commit('setDarkMode', theme);
         }
     },
 });
-
-
-// export default adminStore;

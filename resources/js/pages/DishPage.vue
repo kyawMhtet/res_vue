@@ -50,7 +50,7 @@
                 </div>
 
                 <div class="d-flex flex-wrap gap-3 " v-else>
-                    <div :class="['dish-card', borderClass]" v-for="dish in dishes" :key="dish.id"
+                    <div :class="['dish-card rounded', borderClass]" v-for="dish in dishes" :key="dish.id"
                         style="width: 18rem; ">
 
 
@@ -313,15 +313,16 @@ export default {
                     category: this.categories.find(category => category.id === this.newDish.category_id)
                 }
 
-                this.dishes.unshift(createdDish);
-                this.$router.push('/dishes');
+                // this.dishes.unshift(createdDish);
+                // this.$router.push('/dishes');
+                this.getDishes();
 
-
-                toast('Dish Created Successfully!', {
+                setTimeout(toast('Dish Created Successfully!', {
                     autoClose: 2000,
                     type: 'success',
                     transition: 'zoom'
-                })
+                }), 2000);
+
                 // let image_url = res.data.data.image_url;
 
                 // this.newDish.image_url = image_url;
@@ -443,21 +444,29 @@ export default {
             }, 1000);
         },
 
+        setPage(page) {
+            this.pagination.current_page = page;
+            localStorage.setItem('currentPage', page);
+            this.getDishes(page);
+        },
+
         nextPage() {
             if (this.currentPage < this.lastPage) {
-                this.getDishes(this.currentPage + 1);
+                this.setPage(this.currentPage + 1);
             }
         },
 
         prevPage() {
             if (this.currentPage > 1) {
-                this.getDishes(this.currentPage - 1);
+                this.setPage(this.currentPage - 1);
             }
         }
     },
 
     mounted() {
-        this.getDishes();
+        const savedPage = localStorage.getItem('currentPage');
+        const page = savedPage ? parseInt(savedPage, 10) : 1;
+        this.getDishes(page);
     },
 }
 </script>

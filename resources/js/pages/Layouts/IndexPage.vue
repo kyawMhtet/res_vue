@@ -1,10 +1,10 @@
 <template>
-    <div :class="['app', themeClass]">
+    <div :class="['app ', themeClass]">
         <div class="row g-0">
             <div class="col-md-2">
                 <SideBar />
             </div>
-            <div class="col">
+            <div class="col-md-10">
                 <router-view>
                     <template v-slot="{ Component }">
 

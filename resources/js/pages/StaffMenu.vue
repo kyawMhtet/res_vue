@@ -49,13 +49,14 @@
         <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"
             data-bs-backdrop="static">
             <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">Register Staff</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form action="">
+                <form action="" @submit.prevent="addStaff">
+
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Register Staff</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
                             <div>
                                 <label for="">Name:</label>
                                 <input type="text" placeholder="Staff Name" class="form-control mt-1"
@@ -85,13 +86,14 @@
                                     </option>
                                 </select>
                             </div>
-                        </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
-                    </div>
-                </div>
+                </form>
+
             </div>
         </div>
 
@@ -185,6 +187,28 @@ export default {
             } catch (error) {
                 console.log(error.message);
             }
+        },
+
+        async addStaff() {
+            try {
+                let addNewStaff = {
+                    name: this.newStaff.name,
+                    email: this.newStaff.email,
+                    role: this.newStaff.role,
+                    password: this.newStaff.password
+                }
+
+                let res = await axios.post('http://localhost:8000/api/users', addNewStaff);
+                console.log(res.data.user);
+
+                this.staffs.push(res.data.user);
+
+                this.newStaff = { name: '', email: '', password: '', role: '' };
+
+            } catch (error) {
+                console.log(error.message);
+            }
+
         },
 
 

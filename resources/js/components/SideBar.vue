@@ -26,16 +26,29 @@
                                         Dishes</router-link>
                                 </li>
 
-                                <li class="d-flex justify-content-center my-2">
-                                    <i class="bi bi-dash-lg text-secondary"></i>
+                                <li class="d-flex justify-content-center my-2 ">
+                                    <!-- <i class="bi bi-dash-lg text-secondary"></i>
+                                    <router-link to="/orders" class="nav-link"> Orders</router-link> -->
+                                    <!-- <small class="badge text-bg-info">
+                                        {{ orderCount }}
+                                    </small> -->
 
-                                    <router-link to="/about" class="nav-link"> Orders</router-link>
+
+
+                                    <div class="d-flex position-relative">
+                                        <i class="bi bi-dash-lg text-secondary"></i>
+                                        <router-link to="/orders" class="nav-link"> Orders</router-link>
+                                        <span v-if="orderCount > 0"
+                                            class="position-absolute top-50 start-100 px-2 translate-middle p-1  badge rounded-pill bg-danger">
+                                            {{ orderCount }}
+                                            <span class="visually-hidden">unread messages</span>
+                                        </span>
+                                    </div>
+
                                 </li>
                             </ul>
-
                         </div>
                     </transition>
-
                 </li>
 
                 <li class="nav-item my-4">
@@ -61,48 +74,32 @@
                         </div>
                     </transition>
                 </li>
-                <!-- <li class="nav-item">
-                    <router-link to="/about" class="nav-link" :class="{ active: isActive('/about') }">About</router-link>
-                    <hr>
-                </li> -->
-                <!-- Add more sidebar links as needed -->
             </ul>
         </div>
 
-
-
-
-
         <div class="mb-4 mt-2 d-flex justify-content-center gap-3">
-
             <div>
                 <i class="bi bi-sun-fill sun text-white" style="font-size: 1.3rem;" v-if="!getTheme"></i>
                 <i class="bi bi-moon stars text-white" style="font-size: 1.3rem;" v-if="getTheme"></i>
             </div>
 
             <label class="switch mt-1">
-
                 <input type="checkbox" id="theme-toggle" @change="toggleTheme" :checked="getTheme">
-                <!-- <i class="bi bi-moon stars" style="font-size: 1.5rem;"></i> -->
                 <span class="slider round"></span>
             </label>
-
-
         </div>
 
         <div class="logout mt-auto">
             <form action="" @submit.prevent="userLogout">
                 <button class="btn btn-danger w-75" type="submit">Logout</button>
-
             </form>
         </div>
-
-
     </div>
 </template>
 
 <script>
 import { mapActions, mapGetters } from 'vuex';
+import axios from 'axios';
 
 export default {
     name: 'SideBar',
@@ -115,15 +112,11 @@ export default {
     },
 
     computed: {
-        ...mapGetters(["getTheme"]),
-        darkModeChecked: {
-            get() {
-                return this.getTheme;
-            },
-            set(value) {
-                this.changeTheme(this.toggleTheme);
-            },
-        },
+        ...mapGetters(["getTheme", "getOrders"]),
+
+        orderCount() {
+            return this.getOrders.filter(order => order.status === 'new_order').length;
+        }
     },
 
     methods: {
@@ -131,12 +124,7 @@ export default {
 
         isActive(route) {
             return this.$route.path === route;
-            // return this.$route.matched.some(record => record.path === route || record.path.startsWith(route + '/'));
         },
-
-        // toggleCollapse(section) {
-        //     this[section] = !this[section];
-        // },
 
         toggleCollapse(section) {
             if (section === 'homeCollapse') {
@@ -152,26 +140,23 @@ export default {
             try {
                 const token = localStorage.getItem('token');
                 console.log('Token:', token); // Log token for debugging
-                let res = await axios.post('http://localhost:8000/api/auth/logout', {}, {
+                await axios.post('http://localhost:8000/api/auth/logout', {}, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 });
 
-                console.log(res);
-                this.logout;
+                console.log('Logged out successfully');
+                this.logout(); // Call the Vuex logout action
                 this.$router.push('/login');
             } catch (error) {
                 console.log(error.message);
             }
         },
 
-
         toggleTheme(e) {
             console.log(e.target.checked);
-            // this.darkMode = !this.darkMode;
             this.changeTheme(e.target.checked);
-            // console.log(this.getTheme);
         }
     }
 }
@@ -184,7 +169,6 @@ export default {
     top: 0;
     left: 0;
     background-color: #181a20;
-
     text-align: center;
     height: 100%;
     overflow-y: auto;

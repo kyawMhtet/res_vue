@@ -3,7 +3,7 @@
 
         <Loader v-if="loading" />
 
-        <div class="mt-5 py-2 menus d-flex flex-wrap gap-3" v-else>
+        <div class="mt-4 py-2 menus d-flex flex-wrap gap-3" v-else>
             <router-link :to="'/menus/' + category.id" v-for="category in categories" :key="category.id">
                 <div class="card">
                     <img :src="category.image" class="card-img-top" alt="...">

@@ -11,6 +11,10 @@ export default defineConfig({
 
         vue()
     ],
+    build: {
+        manifest: true,
+        outDir: 'public/build',
+    },
 
     define: {
         __VUE_OPTIONS_API__: true,
