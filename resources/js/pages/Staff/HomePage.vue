@@ -35,7 +35,7 @@
                                             <li class="d-flex justify-content-center my-2">
                                                 <i class="bi bi-dash-lg text-secondary"></i>
 
-                                                <router-link to="/about" class="nav-link"> Orders</router-link>
+                                                <router-link to="/about" class="nav-link">Orders</router-link>
                                             </li>
                                         </ul>
 
@@ -297,12 +297,22 @@ export default {
 
         async checkout() {
             console.log(this.subTotalPrice);
+            const items = this.cartItems.map(item => ({
+                id: item.id,
+                quantity: item.quantity
+            }));
+
+            console.log(items);
             let res = await axios.post('http://localhost:8000/api/panel/cartInfo/check-out', {
                 table_id: this.table_id,
-                sub_total_price: this.totalPrice
+                sub_total_price: this.totalPrice,
+                items
+
+
             });
 
-            console.log(res.data.order.sub_total_price);
+            console.log(res);
+            // console.log(res.data.order.sub_total_price);
             this.cartItems.length = 0;
         }
 

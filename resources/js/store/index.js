@@ -1,6 +1,7 @@
 import { createStore } from "vuex";
 import createPersistedState from "vuex-persistedstate";
 import axios from 'axios';
+import { toast } from "vue3-toastify";
 
 export default createStore({
     plugins: [createPersistedState()],
@@ -89,7 +90,7 @@ export default createStore({
         async fetchOrders({ commit }) {
             try {
                 let res = await axios.get('http://localhost:8000/api/orders');
-                // console.log(res.data);
+                console.log(res.data);
                 commit('setOrders', res.data.orders.map(order => ({
                     id: order.id,
                     order_id: order.order_id,
@@ -151,6 +152,11 @@ export default createStore({
                 commit('addToCart', res.data.cartMenus);
                 menu.quantity = 1;
                 await dispatch('getCartItems');
+                toast('Added To Cart!', {
+                    autoClose: 1000,
+                    type: 'success',
+                    transition: 'zoom'
+                })
             } catch (error) {
                 console.log(error.message);
             }
